@@ -100,3 +100,4 @@ export const ENTITY_TYPES = [
 ] as const;
 
 export type MinecraftEntityId = typeof ENTITY_TYPES[number];
+export type MinecraftEntityType = MinecraftEntityId | `!${MinecraftEntityId}`;

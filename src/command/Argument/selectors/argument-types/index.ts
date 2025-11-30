@@ -1,4 +1,4 @@
-import { MinecraftEntityId } from "../../minecraft-entity-types";
+import { MinecraftEntityType } from "../../minecraft-entity-types";
 
 type range = number | `${number}..` | `..${number}` | `${number}..${number}`;
 
@@ -14,7 +14,7 @@ export interface SelectorArguments {
     //score
     tags?: string[];
     //nbt
-    type: MinecraftEntityId
+    type: MinecraftEntityType
     //team
     limit?: number;
     gamemode?: "survival" | "creative" | "adventure" | "spectator";

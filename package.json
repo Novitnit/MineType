@@ -16,8 +16,8 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsup src/index.ts --format esm --dts --watch",
-    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup --watch",
+    "build": "tsup",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

@@ -20,7 +20,7 @@ export const ScoreTable: ScoreType[] = [];
 
 export class Score {
     public name: string;
-    private type: ScoreCriteria;
+    public type: ScoreCriteria;
     public used: boolean = false;
 
     constructor(scoreOption: scoreOption) {

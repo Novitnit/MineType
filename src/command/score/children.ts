@@ -1,68 +1,75 @@
 import { Score } from ".";
 import { selector } from "../Argument/selectors";
-import { commandStack, stack } from "..";
+import { FUNCTION } from "..";
 
-export interface CommandScoreChange {
+interface CommandScoreChange {
     type: "ScoreAdd" | "ScoreRemove" | "ScoreSet";
     score: Score;
     selector: selector;
     value: number;
 }
 
-export interface CommandScoreReset{
+interface CommandScoreReset {
     type: "ScoreReset";
     score: Score;
     selector: selector;
 }
 
-export interface ScoreOperation{
+interface CommandScoreOperation {
     type: "ScoreOperation";
     operation: "+=" | "-=" | "*=" | "/=" | "%=" | "=" | "<" | ">" | "><";
     score1: Score;
     selector1: selector;
     score2: Score;
     selector2: selector;
-} 
+}
 
-export type CommandScore = 
-| CommandScoreChange 
-| CommandScoreReset
-| ScoreOperation;
+interface CommandScoreEnable {
+    type: "ScoreEnable";
+    score: Score;
+    selector: selector;
+}
+
+export type CommandScore =
+    | CommandScoreChange
+    | CommandScoreReset
+    | CommandScoreOperation
+    | CommandScoreEnable;
 
 export class ScoreTarget {
     constructor(
-        private parent: Score,
-        private selector: selector
-    ) {}
+        protected parent: Score,
+        protected selector: selector
+    ) { }
 
     private ScoreChange(type: CommandScoreChange["type"], value: number) {
         this.parent.used = true;
-        const Stack = stack[stack.length - 1] ?? 0;
-        commandStack[Stack] ||= [];
-        commandStack[Stack].push({
-            type,
+        const fn = FUNCTION.functionStack.at(-1);
+        if (!fn) throw new Error("ScoreAdd used outside FUNCTION()");
+        fn.commands.push({
+            type: type,
             score: this.parent,
             selector: this.selector,
-            value
+            value: value
         });
     }
 
-    private ScoreOperation(score: Score, selector: selector, operation: ScoreOperation["operation"]) {
+    private ScoreOperation(score: Score, selector: selector, operation: CommandScoreOperation["operation"]) {
         this.parent.used = true;
-        const Stack = stack[stack.length - 1] ?? 0;
+        const fn = FUNCTION.functionStack.at(-1);
+        if (!fn) throw new Error("ScoreOperation used outside FUNCTION()");
         score.used = true;
-        commandStack[Stack] ||= [];
-        commandStack[Stack].push({
+        fn.commands.push({
             type: "ScoreOperation",
+            operation: operation,
             score1: this.parent,
             selector1: this.selector,
             score2: score,
-            selector2: selector,
-            operation: operation
+            selector2: selector
         });
     }
 
-    add(value: number | {Score: Score; Selector: selector}) {
+    add(value: number | { Score: Score; Selector: selector }) {
         if (typeof value === "number") {
             this.ScoreChange("ScoreAdd", value);
             return;
@@ -70,7 +77,7 @@ export class ScoreTarget {
         this.ScoreOperation(value.Score, value.Selector, "+=");
     }
 
-    remove(value: number| {Score: Score; Selector: selector}) {
+    remove(value: number | { Score: Score; Selector: selector }) {
         if (typeof value === "number") {
             this.ScoreChange("ScoreRemove", value);
             return;
@@ -82,16 +89,28 @@ export class ScoreTarget {
         this.ScoreChange("ScoreSet", value);
     }
 
-    operation({score, selector, operation}: {score: Score, selector: selector, operation: ScoreOperation["operation"]}) {
+    operation({ score, selector, operation }: { score: Score, selector: selector, operation: CommandScoreOperation["operation"] }) {
         this.ScoreOperation(score, selector, operation);
     }
 
     reset() {
         this.parent.used = true;
-        const Stack = stack[stack.length - 1] ?? 0;
-        commandStack[Stack] ||= [];
-        commandStack[Stack].push({
+        const fn = FUNCTION.functionStack.at(-1);
+        if (!fn) throw new Error("ScoreReset used outside FUNCTION()");
+        fn.commands.push({
             type: "ScoreReset",
+            score: this.parent,
+            selector: this.selector
+        });
+    }
+
+    enable() {
+        this.parent.used = true;
+        const fn = FUNCTION.functionStack.at(-1);
+        if (!fn) throw new Error("ScoreEnable used outside FUNCTION()");
+        if (this.parent.type !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
+        fn.commands.push({
+            type: "ScoreEnable",
             score: this.parent,
             selector: this.selector
         });

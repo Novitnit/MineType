@@ -5,15 +5,16 @@ import { TeamColor } from "../teamColor";
 
 type StandardCriteria =
   | "dummy"
+  | "trigger"
   | "deathCount"
   | "playerKillCount"
   | "totalKillCount"
   | "health"
+  | "xp"
+  | "level"
   | "food"
   | "air"
   | "armor"
-  | "xp"
-  | "level"
 
 type StatCriteria =
   | { broken: MinecraftItemId }

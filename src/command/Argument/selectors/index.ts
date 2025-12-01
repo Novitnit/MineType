@@ -16,6 +16,8 @@ export type Selector<K extends SelectorKind> = {
   toString(): string;
 };
 
+export const PlayerName: string[] = [];
+
 function createSelector<K extends keyof SelectorArgumentsMap>(kind: K, args: SelectorArgumentsMap[K] | undefined): Selector<K> {
   return {
     kind,
@@ -57,8 +59,9 @@ export function allEntities(args?: SelectorArgumentsMap["@e"]): Selector<"@e"> {
   return createSelector("@e", args)
 }
 
-export function name(name: string): string {
-  return name;
+export function regPlayer(name: string): string & {__registeredPlayer: true} {
+  PlayerName.push(name);
+  return name as string & {__registeredPlayer: true};
 }
 
 export type selector = | ReturnType<typeof self>
@@ -66,4 +69,4 @@ export type selector = | ReturnType<typeof self>
   | ReturnType<typeof randomPlayer>
   | ReturnType<typeof allPlayers>
   | ReturnType<typeof allEntities>
-  | string;
+  | ReturnType<typeof regPlayer>;

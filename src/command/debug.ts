@@ -59,6 +59,16 @@ export function Debugger() {
                     file.write(` ${command.selector2.toString()} ${command.score2.name} \n`)
                     break;
                 }
+                case "ScoreEnable":{
+                    file.write(`ScoreEnable `); 
+                    file.write(`${command.selector.toString()} `)
+                    file.write(`${command.score.name} \n`)
+                    break;
+                }
+                case "CallFUNCTION":{
+                    file.write(`CallFUNCTION ${command.functionId}\n`);
+                    break;
+                }
             }
         }
     }

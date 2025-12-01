@@ -3,44 +3,67 @@ import { SelectorArguments } from "./argument-types";
 export type SelectorKind = "@p" | "@r" | "@a" | "@e" | "@s";
 
 export interface SelectorArgumentsMap {
-  "@p": SelectorArguments;      
-  "@r": SelectorArguments;       
+  "@p": SelectorArguments;
+  "@r": SelectorArguments;
   "@a": SelectorArguments;
   "@e": SelectorArguments;
-  "@s": {};                   
+  "@s": {};
 }
 
 export type Selector<K extends SelectorKind> = {
   kind: K;
-  arguments?: SelectorArgumentsMap[K];
+  arguments: SelectorArgumentsMap[K] | undefined;
+  toString(): string;
 };
 
-export type AnySelector = Selector<SelectorKind>;
+function createSelector<K extends keyof SelectorArgumentsMap>(kind: K, args: SelectorArgumentsMap[K] | undefined): Selector<K> {
+  return {
+    kind,
+    arguments: args,
+    toString() {
+      if (!this.arguments) return this.kind;
+
+      const entries = Object.entries(this.arguments)
+        .map(([k, v]) => {
+          if (Array.isArray(v)) {
+            return `${k}=${v.join(",")}`;
+          }
+          return `${k}=${v}`;
+        })
+        .join(",");
+
+      return `${this.kind}[${entries}]`;
+    }
+  };
+}
 
 export function self(): Selector<"@s"> {
-  return { kind: "@s" };
+  return createSelector("@s", undefined);
 }
 
 export function nearestPlayer(args?: SelectorArgumentsMap["@p"]): Selector<"@p"> {
-  return args
-    ? { kind: "@p", arguments: args }
-    : { kind: "@p" };
+  return createSelector("@p", args);
 }
 
 export function randomPlayer(args?: SelectorArgumentsMap["@r"]): Selector<"@r"> {
-  return args
-    ? { kind: "@r", arguments: args }
-    : { kind: "@r" };
+  return createSelector("@r", args)
 }
 
 export function allPlayers(args?: SelectorArgumentsMap["@a"]): Selector<"@a"> {
-  return args
-    ? { kind: "@a", arguments: args }
-    : { kind: "@a" };
+  return createSelector("@a", args)
 }
 
 export function allEntities(args?: SelectorArgumentsMap["@e"]): Selector<"@e"> {
-  return args
-    ? { kind: "@e", arguments: args }
-    : { kind: "@e" };
+  return createSelector("@e", args)
 }
+
+export function name(name: string): string {
+  return name;
+}
+
+export type selector = | ReturnType<typeof self>
+  | ReturnType<typeof nearestPlayer>
+  | ReturnType<typeof randomPlayer>
+  | ReturnType<typeof allPlayers>
+  | ReturnType<typeof allEntities>
+  | string;

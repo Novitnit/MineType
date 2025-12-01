@@ -1,4 +1,6 @@
 import { ScoreCriteria } from "../Argument/score/Criteria";
+import { selector } from "../Argument/selectors";
+import { ScoreTarget } from "./children";
 import { createScore } from "./create";
 
 let scoreId = 0;
@@ -17,7 +19,7 @@ interface scoreOption {
 export const ScoreTable: ScoreType[] = [];
 
 export class Score {
-    private name: string;
+    public name: string;
     private type: ScoreCriteria;
     public used: boolean = false;
 
@@ -27,5 +29,10 @@ export class Score {
         this.name = scoreOption.display ?? `score_${id}`;
 
         createScore(this.name, this.type, this);
+    }
+
+    public taget(selector: selector
+    ): Omit<ScoreTarget, "taget"> {
+        return new ScoreTarget(this, selector) as Omit<ScoreTarget, "taget">;
     }
 }

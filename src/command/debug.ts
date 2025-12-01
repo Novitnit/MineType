@@ -69,6 +69,12 @@ export function Debugger() {
                     file.write(`CallFUNCTION ${command.functionId}\n`);
                     break;
                 }
+                case "Say":{
+                    file.write(`say `);
+                    file.write(`${command.message}`);
+                    file.write("\n");
+                    break;
+                }
             }
         }
     }

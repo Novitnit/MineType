@@ -1,3 +1,4 @@
+import { CommandSay } from "./logs/say";
 import { CommandScore } from "./score/children";
 export { Debugger } from './debug'
 
@@ -14,6 +15,7 @@ interface CallFUNCTION {
 type command = (
     | CommandScore
     | CallFUNCTION
+    | CommandSay
 )[];
 
 //function
@@ -56,4 +58,5 @@ export class FUNCTION {
 }
 
 export { Score } from './score'
+export { say } from './logs'
 export { self, nearestPlayer, randomPlayer, allPlayers, regPlayer, allEntities } from './Argument/selectors'

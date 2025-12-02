@@ -1,6 +1,6 @@
-import { Score } from ".";
+import { Score, ScoreInternal } from ".";
 import { selector } from "../Argument/selectors";
-import { FUNCTION } from "..";
+import { commandReturnType, FUNCTION } from "..";
 
 interface CommandScoreChange {
     type: "ScoreAdd" | "ScoreRemove" | "ScoreSet";
@@ -42,77 +42,107 @@ export class ScoreTarget {
         protected selector: selector
     ) { }
 
-    private ScoreChange(type: CommandScoreChange["type"], value: number) {
-        this.parent.used = true;
+    private ScoreChange(type: CommandScoreChange["type"], value: number): commandReturnType {
+        ScoreInternal.setUsed(this.parent, true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreAdd used outside FUNCTION()");
-        fn.commands.push({
+        const result: CommandScoreChange = {
             type: type,
             score: this.parent,
             selector: this.selector,
             value: value
-        });
+        }
+        fn.commands.push(result);
+
+        return {
+            type: "commandReturnType",
+            command: [result]
+        }
     }
 
-    private ScoreOperation(score: Score, selector: selector, operation: CommandScoreOperation["operation"]) {
-        this.parent.used = true;
+    private ScoreOperation(score: Score, selector: selector, operation: CommandScoreOperation["operation"]): commandReturnType {
+        ScoreInternal.setUsed(this.parent, true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreOperation used outside FUNCTION()");
-        score.used = true;
-        fn.commands.push({
+        if (ScoreInternal.isUsed(score) === false) {
+            console.error("\u001b[33mWarning: The Score used is not changed before. Did you forget to use it?\u001b[0m");
+            ScoreInternal.setUsed(score, true);
+        }
+        const result: CommandScoreOperation = {
             type: "ScoreOperation",
             operation: operation,
             score1: this.parent,
             selector1: this.selector,
             score2: score,
             selector2: selector
-        });
+        };
+        fn.commands.push(result);
+
+        return {
+            type: "commandReturnType",
+            command: [result]
+        };
     }
 
-    add(value: number | { Score: Score; Selector: selector }) {
+    add(value: number | { Score: Score; Selector: selector }): commandReturnType {
         if (typeof value === "number") {
-            this.ScoreChange("ScoreAdd", value);
-            return;
+            const result = this.ScoreChange("ScoreAdd", value);
+            return result;
         }
-        this.ScoreOperation(value.Score, value.Selector, "+=");
+        const result = this.ScoreOperation(value.Score, value.Selector, "+=");
+        return result;
+
     }
 
-    remove(value: number | { Score: Score; Selector: selector }) {
+    remove(value: number | { Score: Score; Selector: selector }): commandReturnType {
         if (typeof value === "number") {
-            this.ScoreChange("ScoreRemove", value);
-            return;
+            const result = this.ScoreChange("ScoreRemove", value);
+            return result;
         }
-        this.ScoreOperation(value.Score, value.Selector, "-=");
+        const result = this.ScoreOperation(value.Score, value.Selector, "-=");
+        return result;
     }
 
-    set(value: number) {
-        this.ScoreChange("ScoreSet", value);
+    set(value: number): commandReturnType {
+        const result = this.ScoreChange("ScoreSet", value);
+        return result;
     }
 
-    operation({ score, selector, operation }: { score: Score, selector: selector, operation: CommandScoreOperation["operation"] }) {
-        this.ScoreOperation(score, selector, operation);
+    operation({ score, selector, operation }: { score: Score, selector: selector, operation: CommandScoreOperation["operation"] }): commandReturnType {
+        const result = this.ScoreOperation(score, selector, operation);
+        return result;
     }
 
-    reset() {
-        this.parent.used = true;
+    reset(): commandReturnType {
+        ScoreInternal.setUsed(this.parent, true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreReset used outside FUNCTION()");
-        fn.commands.push({
+        const result: CommandScoreReset = {
             type: "ScoreReset",
             score: this.parent,
             selector: this.selector
-        });
+        };
+        fn.commands.push(result);
+        return {
+            type: "commandReturnType",
+            command: [result]
+        };
     }
 
-    enable() {
-        this.parent.used = true;
+    enable(): commandReturnType {
+        ScoreInternal.setUsed(this.parent, true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreEnable used outside FUNCTION()");
-        if (this.parent.type !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
-        fn.commands.push({
+        if (ScoreInternal.getType(this.parent) !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
+        const result: CommandScoreEnable = {
             type: "ScoreEnable",
             score: this.parent,
             selector: this.selector
-        });
+        };
+        fn.commands.push(result);
+        return {
+            type: "commandReturnType",
+            command: [result]
+        };
     }
 }

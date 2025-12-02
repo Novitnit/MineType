@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { ScoreTable } from "./score";
+import { ScoreInternal, ScoreTable } from "./score";
 import { allFunctions } from ".";
 
 export function Debugger() {
@@ -17,7 +17,7 @@ export function Debugger() {
     const file = fs.createWriteStream(`${dir}/debug.log`);
     file.write(`Debugger invoked from: ${FilePath}\n\n`);
     file.write("Current Score Table State:\n");
-    file.write(ScoreTable.map(score => `\t${score.score.used ? "🟢" : "🔴"}${score.name} : ${score.type}`).join("\n") + "\n\n");
+    file.write(ScoreTable.map(score => `\t${ScoreInternal.isUsed(score.score) ? "🟢" : "🔴"}${score.name} : ${score.type}`).join("\n") + "\n\n");
 
     file.write("Command\n");
     for (const func of allFunctions) {
@@ -28,41 +28,41 @@ export function Debugger() {
                 case "ScoreAdd":{
                     file.write(`ScoreAdd `); 
                     file.write(`${command.selector.toString()} `)
-                    file.write(`${command.score.name} `)
+                    file.write(`${ScoreInternal.getName(command.score)} `)
                     file.write(`${command.value} \n`)
                     break;
                 }
                 case "ScoreRemove":{
                     file.write(`ScoreRemove `); 
                     file.write(`${command.selector.toString()} `)
-                    file.write(`${command.score.name} `)
+                    file.write(`${ScoreInternal.getName(command.score)} `)
                     file.write(`${command.value} \n`)
                     break;
                 }
                 case "ScoreSet": {
                     file.write(`ScoreSet `);
                     file.write(`${command.selector.toString()} `)
-                    file.write(`${command.score.name} `)
+                    file.write(`${ScoreInternal.getName(command.score)} `)
                     file.write(`${command.value} \n`)
                     break;
                 }
                 case "ScoreReset": {
                     file.write(`ScoreReset`);
                     file.write(`${command.selector.toString()} `)
-                    file.write(`${command.score.name} \n`)
+                    file.write(`${ScoreInternal.getName(command.score)} \n`)
                     break;
                 }
                 case "ScoreOperation": {
                     file.write(`ScoreOperation`);
-                    file.write(` ${command.selector1.toString()} ${command.score1.name} `)
+                    file.write(` ${command.selector1.toString()} ${ScoreInternal.getName(command.score1)} `)
                     file.write(` ${command.operation} `)
-                    file.write(` ${command.selector2.toString()} ${command.score2.name} \n`)
+                    file.write(` ${command.selector2.toString()} ${ScoreInternal.getName(command.score2)} \n`)
                     break;
                 }
                 case "ScoreEnable":{
                     file.write(`ScoreEnable `); 
                     file.write(`${command.selector.toString()} `)
-                    file.write(`${command.score.name} \n`)
+                    file.write(`${ScoreInternal.getName(command.score)} \n`)
                     break;
                 }
                 case "CallFUNCTION":{
@@ -75,7 +75,16 @@ export function Debugger() {
                     file.write("\n");
                     break;
                 }
+                case "Title":{
+                    file.write(`${command.titleType} ${command.selector.toString()}`);
+                    file.write(`${JSON.stringify(command.component)}`);
+                    file.write("\n");
+                    break;
+                }
             }
+        }
+        if(func.commands.length === 0){
+            file.write(`\t\t<No Commands>\n`);
         }
     }
     file.end();

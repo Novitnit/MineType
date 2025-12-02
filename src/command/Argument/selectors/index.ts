@@ -1,3 +1,4 @@
+import { ScoreInternal } from "../../score";
 import { SelectorArguments } from "./argument-types";
 
 export type SelectorKind = "@p" | "@r" | "@a" | "@e" | "@s";
@@ -19,6 +20,14 @@ export type Selector<K extends SelectorKind> = {
 export const PlayerName: string[] = [];
 
 function createSelector<K extends keyof SelectorArgumentsMap>(kind: K, args: SelectorArgumentsMap[K] | undefined): Selector<K> {
+  
+  if(args && 'score' in args && args.score instanceof Object && 'score' in args.score) {
+    if(ScoreInternal.isUsed(args.score) === false){
+      console.error("\u001b[33mWarning: The Score used is not changed before. Did you forget to use it?\u001b[0m");
+      ScoreInternal.setUsed(args.score, true);
+    }  
+  }
+  
   return {
     kind,
     arguments: args,

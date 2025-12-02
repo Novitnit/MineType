@@ -1,3 +1,4 @@
+import { Score } from "../../../score";
 import { MinecraftEntityType } from "../../minecraft-entity-types";
 
 type range = number | `${number}..` | `..${number}` | `${number}..${number}`;
@@ -11,7 +12,7 @@ export interface SelectorArguments {
     dz?: number;
 
     distance?: range;
-    //score
+    score? : Score;
     tags?: string[];
     //nbt
     type: MinecraftEntityType

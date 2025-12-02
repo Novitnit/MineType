@@ -1,4 +1,5 @@
 import { CommandSay } from "./logs/say";
+import { CommandTitle } from "./logs/title";
 import { CommandScore } from "./score/children";
 export { Debugger } from './debug'
 
@@ -7,16 +8,25 @@ export interface FUNCTION {
     (): void;
     id: number;
 }
+
 //command
 interface CallFUNCTION {
     type: "CallFUNCTION";
     functionId: number;
 }
+
 type command = (
     | CommandScore
     | CallFUNCTION
     | CommandSay
+    | CommandTitle
 )[];
+
+//command Return Types
+export type commandReturnType = {
+    type: "commandReturnType";
+    command: command;
+};
 
 //function
 export const allFunctions: FUNCTION[] = [];
@@ -57,6 +67,16 @@ export class FUNCTION {
 
 }
 
+function createRootFunction() {
+    const f = Object.create(FUNCTION.prototype) as FUNCTION;
+    f.id = 0;
+    f.commands = [];
+    allFunctions.push(f);
+    return f;
+}
+
+createRootFunction();
+
 export { Score } from './score'
-export { say } from './logs'
+export * from './logs'
 export { self, nearestPlayer, randomPlayer, allPlayers, regPlayer, allEntities } from './Argument/selectors'

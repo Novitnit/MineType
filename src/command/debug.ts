@@ -21,7 +21,7 @@ export function Debugger() {
 
     file.write("Command\n");
     for (const func of allFunctions) {
-        file.write(`\tFUNCTION ID: ${func.id}\n`);
+        file.write(`\t${func.Name}\n`);
         for (const command of func.commands) {
             file.write(`\t\t`);
             switch (command.type) {

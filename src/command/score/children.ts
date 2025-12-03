@@ -1,6 +1,6 @@
 import { Score, ScoreInternal } from ".";
 import { selector } from "../Argument/selectors";
-import { commandReturnType, FUNCTION } from "..";
+import { commandReturnType, commandSym, FUNCTION } from "..";
 
 interface CommandScoreChange {
     type: "ScoreAdd" | "ScoreRemove" | "ScoreSet";
@@ -36,24 +36,33 @@ export type CommandScore =
     | CommandScoreOperation
     | CommandScoreEnable;
 
+export const Parent = Symbol("ScoreTargetParent");
+export const sel = Symbol("ScoreTargetSelector");
+
 export class ScoreTarget {
+    private [Parent]: Score;
+    private [sel]: selector;
     constructor(
-        protected parent: Score,
-        protected selector: selector
-    ) { }
+        parent: Score,
+        selector: selector
+    ) {
+        this[Parent] = parent;
+        this[sel] = selector;
+    }
 
     private ScoreChange(type: CommandScoreChange["type"], value: number): commandReturnType {
-        ScoreInternal.setUsed(this.parent, true);
+        ScoreInternal.setUsed(this[Parent], true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreAdd used outside FUNCTION()");
         const result: CommandScoreChange = {
             type: type,
-            score: this.parent,
-            selector: this.selector,
+            score: this[Parent],
+            selector: this[sel],
             value: value
-        }
-        fn.commands.push(result);
-
+        };
+        (fn as any)[commandSym] ||= [];
+        (fn as any)[commandSym].push(result);
+        
         return {
             type: "commandReturnType",
             command: [result]
@@ -61,7 +70,7 @@ export class ScoreTarget {
     }
 
     private ScoreOperation(score: Score, selector: selector, operation: CommandScoreOperation["operation"]): commandReturnType {
-        ScoreInternal.setUsed(this.parent, true);
+        ScoreInternal.setUsed(this[Parent], true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreOperation used outside FUNCTION()");
         if (ScoreInternal.isUsed(score) === false) {
@@ -71,12 +80,12 @@ export class ScoreTarget {
         const result: CommandScoreOperation = {
             type: "ScoreOperation",
             operation: operation,
-            score1: this.parent,
-            selector1: this.selector,
+            score1: this[Parent],
+            selector1: this[sel],
             score2: score,
             selector2: selector
         };
-        fn.commands.push(result);
+        (fn as any)[commandSym].push(result);
 
         return {
             type: "commandReturnType",
@@ -114,15 +123,15 @@ export class ScoreTarget {
     }
 
     reset(): commandReturnType {
-        ScoreInternal.setUsed(this.parent, true);
+        ScoreInternal.setUsed(this[Parent], true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreReset used outside FUNCTION()");
         const result: CommandScoreReset = {
             type: "ScoreReset",
-            score: this.parent,
-            selector: this.selector
+            score: this[Parent],
+            selector: this[sel]
         };
-        fn.commands.push(result);
+        (fn as any)[commandSym].push(result);
         return {
             type: "commandReturnType",
             command: [result]
@@ -130,16 +139,16 @@ export class ScoreTarget {
     }
 
     enable(): commandReturnType {
-        ScoreInternal.setUsed(this.parent, true);
+        ScoreInternal.setUsed(this[Parent], true);
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreEnable used outside FUNCTION()");
-        if (ScoreInternal.getType(this.parent) !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
+        if (ScoreInternal.getType(this[Parent]) !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
         const result: CommandScoreEnable = {
             type: "ScoreEnable",
-            score: this.parent,
-            selector: this.selector
+            score: this[Parent],
+            selector: this[sel]
         };
-        fn.commands.push(result);
+        (fn as any)[commandSym].push(result);
         return {
             type: "commandReturnType",
             command: [result]

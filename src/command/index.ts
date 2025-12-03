@@ -1,3 +1,5 @@
+import { If_Stem } from "./excute";
+import { ElseIf, If_StemType } from "./excute/if";
 import { CommandSay } from "./logs/say";
 import { CommandTitle } from "./logs/title";
 import { CommandScore } from "./score/children";
@@ -16,12 +18,15 @@ interface CallFUNCTION {
     functionId: number;
 }
 
-type command = (
+export type com = (
     | CommandScore
     | CallFUNCTION
     | CommandSay
     | CommandTitle
-)[];
+    | If_StemType
+)
+
+export type command = com[];
 
 //command Return Types
 export type commandReturnType = {
@@ -31,17 +36,25 @@ export type commandReturnType = {
 
 //function
 export const allFunctions: FUNCTION[] = [];
+export const commandSym = Symbol("command");
 
 export class FUNCTION {
-    static nextId = 1;
-    static functionStack: FUNCTION[] = [];
+    static Id = 1;
+    static functionStack: (FUNCTION | If_Stem | ElseIf)[] = [];
 
+    static nextId (){
+        return this.Id++;
+    }
+
+    static removeId (){
+        this.Id--;
+    }
     id: number;
-    commands: command = [];
+    [commandSym]: command = [];
     Name: string;
 
     constructor(fn: () => void) {
-        this.id = FUNCTION.nextId++;
+        this.id = FUNCTION.nextId();
         this.Name = `function_${this.id}`;
 
         const error = new Error()
@@ -69,7 +82,7 @@ export class FUNCTION {
         const callable = function () {
             const fn = FUNCTION.functionStack.at(-1);
             if (!fn) throw new Error("FUNCTION called outside FUNCTION()");
-            fn.commands.push({
+            (fn as any)[commandSym].push({
                 type: "CallFUNCTION",
                 functionId: self.id
             });
@@ -80,7 +93,7 @@ export class FUNCTION {
     }
 
     addCommand(command: command) {
-        this.commands.push(...command);
+        (this as any)[commandSym].push(...command);
     }
 
 }
@@ -88,7 +101,7 @@ export class FUNCTION {
 function createRootFunction() {
     const f = Object.create(FUNCTION.prototype) as FUNCTION;
     f.id = 0;
-    f.commands = [];
+    (f as any)[commandSym] = [];
     f.Name = "load_function";
     allFunctions.push(f);
     return f;

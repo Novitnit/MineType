@@ -15,7 +15,7 @@ export interface SelectorArguments {
     score? : Score;
     tags?: string[];
     //nbt
-    type: MinecraftEntityType
+    type?: MinecraftEntityType
     //team
     limit?: number;
     gamemode?: "survival" | "creative" | "adventure" | "spectator";

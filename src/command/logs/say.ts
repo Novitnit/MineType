@@ -1,4 +1,4 @@
-import { commandReturnType, FUNCTION } from "..";
+import { commandReturnType, commandSym, FUNCTION } from "..";
 import { selector } from "../Argument/selectors";
 
 export interface CommandSay{
@@ -13,9 +13,9 @@ export function say(...message: (string | selector)[]):commandReturnType {
     const result: CommandSay = {
         type: "Say",
         message: message.map(msgPart => typeof msgPart === "string" ? msgPart : msgPart.toString()).join("")
-    }
-
-    fn.commands.push(result)
+    };
+    (fn as any)[commandSym] ||= [];
+    (fn as any)[commandSym].push(result);
 
     return {
         type: "commandReturnType",

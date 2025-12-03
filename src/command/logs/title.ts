@@ -1,4 +1,4 @@
-import { allFunctions, FUNCTION } from "..";
+import { allFunctions, commandSym, FUNCTION } from "..";
 import { selector } from "../Argument/selectors";
 import { TitleComponent } from "../Argument/title";
 import { ScoreInternal } from "../score";
@@ -51,7 +51,8 @@ class TitleComponentReturn {
             titleType: titleType,
             component: component
         };
-        fn.commands.push(result);
+        (fn as any)[commandSym] ||= [];
+        (fn as any)[commandSym].push(result);
     }
 
     subtitle(component: TitleComponent[]) {

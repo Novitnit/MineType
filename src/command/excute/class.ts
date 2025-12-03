@@ -9,14 +9,17 @@ class baceExcute {
     
     as (selector: selector) {
         this.As = selector;
+        return this as Omit<this, "as" >;
     }
 
     at (selector: selector) {
         this.At = selector;
+        return this as Omit<this, "at" >;
     }
 
     in (dimension: dimension) {
         this.In = dimension;
+        return this as Omit<this, "in" >;
     }
 
 }

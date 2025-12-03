@@ -77,7 +77,7 @@ export function Debugger() {
                 }
                 case "Title":{
                     file.write(`${command.titleType} ${command.selector.toString()}`);
-                    file.write(`${JSON.stringify(command.component)}`);
+                    file.write(` ${JSON.stringify(command.component)}`);
                     file.write("\n");
                     break;
                 }

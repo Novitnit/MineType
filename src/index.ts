@@ -11,5 +11,6 @@ export {
     regPlayer,
     say,
     self,
+    SlotType
 } from './command'
 export { Config } from './setUp'

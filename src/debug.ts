@@ -19,6 +19,10 @@ function write(file: fs.WriteStream, indentLevel: number, text: string) {
 // Dispatch Function
 // ------------------------------
 
+function dIfCommand() {
+
+}
+
 function swCommand(file: fs.WriteStream, command: com, indentLevel = 0) {
     const indent = "\t".repeat(indentLevel);
 
@@ -100,39 +104,93 @@ function swCommand(file: fs.WriteStream, command: com, indentLevel = 0) {
             write(
                 file,
                 indentLevel,
-                `If_StemType` +
-                ` ${command.As ? `as ${command.As}`:""} `+
-                `${command.At ? `at ${command.At}` : ""}`+
+                `If_StemType ${command.If_type}` +
+                ` ${command.As ? `as ${command.As}` : ""} ` +
+                `${command.At ? `at ${command.At}` : ""}` +
                 `${command.In ? ` in ${command.In}` : ""}`
             );
 
-            write(file, indentLevel + 1, `If Condition: (${command.if.condition.score} ` +
-                `${command.if.condition.target} ` +
-                `${command.if.condition.condition} ` +
-                `${typeof command.if.condition.number === "number" ? command.if.condition.number : `${command.if.condition.number.score1} ${command.if.condition.number.selector1}`})`);
-            
-            write(file, indentLevel + 2, `Commands:`);
 
-            for (const sub of command.if.commands) {
-                swCommand(file, sub, indentLevel + 3);
+            if (command.if.condition.type === "score") {
+                write(
+                    file,
+                    indentLevel + 1,
+                    `If ScoreCondition: ${command.if.condition.not ? "not " : ""}(` +
+                    `${command.if.condition.score} ${command.if.condition.target} ` +
+                    `${command.if.condition.condition} ` +
+                    `${typeof command.if.condition.number === "number" ? command.if.condition.number : `${command.if.condition.number.score1} ${command.if.condition.number.selector1}`}` +
+                    `)`
+                );
+            } else {
+                if (command.if.condition.itemType === "block") {
+                    write(
+                        file,
+                        indentLevel + 1,
+                        `If ItemBlockCondition: ${command.if.condition.not ? "not " : ""}(` +
+                        `${command.if.condition.Pos.x} ${command.if.condition.Pos.y} ${command.if.condition.Pos.z} ` +
+                        `${command.if.condition.slot} ${command.if.condition.item}` +
+                        `)`
+                    );
+                } else {
+                    write(
+                        file,
+                        indentLevel + 1,
+                        `If ItemEntityCondition: ${command.if.condition.not ? "not " : ""}(` +
+                        `${command.if.condition.selector} ${command.if.condition.slot} ${command.if.condition.item}` +
+                        `)`
+                    );
+                }
+            }
+
+            write(file, indentLevel + 2, `Commands:`);
+            if (command.if.commands) {
+                for (const sub of command.if.commands) {
+                    swCommand(file, sub, indentLevel + 3);
+                }
+            }else{
+                write(file, indentLevel + 3, `<No Commands>`);
             }
 
             if (command.elseIf) {
                 for (const elseIf of command.elseIf) {
-                    write(
-                        file,
-                        indentLevel + 1,
-                        `ElseIf Condition: (${elseIf.condition.score} ` +
-                        `${elseIf.condition.target} ` +
-                        `${elseIf.condition.condition} ` +
-                        `${typeof elseIf.condition.number === "number" ? elseIf.condition.number : `${elseIf.condition.number.score1} ${elseIf.condition.number.selector1}`})`
-                    );
+                    if (elseIf.condition.type === "score") {
+                        write(
+                            file,
+                            indentLevel + 1,
+                            `ElseIf ScoreCondition: ${elseIf.condition.not ? "not " : ""}(` +
+                            `${elseIf.condition.score} ${elseIf.condition.target} ` +
+                            `${elseIf.condition.condition} ` +
+                            `${typeof elseIf.condition.number === "number" ? elseIf.condition.number : `${elseIf.condition.number.score1} ${elseIf.condition.number.selector1}`}` +
+                            `)`
+                        );
+                    } else {
+                        if (elseIf.condition.itemType === "block") {
+                            write(
+                                file,
+                                indentLevel + 1,
+                                `ElseIf ItemBlockCondition: ${elseIf.condition.not ? "not " : ""}(` +
+                                `${elseIf.condition.Pos.x} ${elseIf.condition.Pos.y} ${elseIf.condition.Pos.z} ` +
+                                `${elseIf.condition.slot} ${elseIf.condition.item}` +
+                                `)`
+                            );
+                        } else {
+                            write(
+                                file,
+                                indentLevel + 1,
+                                `ElseIf ItemEntityCondition: ${elseIf.condition.not ? "not " : ""}(` +
+                                `${elseIf.condition.selector} ${elseIf.condition.slot} ${elseIf.condition.item}` +
+                                `)`
+                            );
+                        }
+                    }
+
                     write(file, indentLevel + 2, `Commands:`);
                     for (const sub of elseIf.commands) {
                         swCommand(file, sub, indentLevel + 3);
                     }
                 }
             }
+
             if (command.else) {
                 write(file, indentLevel + 1, `Else:`);
                 write(file, indentLevel + 2, `Commands:`);
@@ -173,8 +231,7 @@ export function Debugger() {
     file.write(
         ScoreTable.map(
             (score) =>
-                `\t${ScoreInternal.isUsed(score.score) ? "🟢" : "🔴"}${
-                    score.name
+                `\t${ScoreInternal.isUsed(score.score) ? "🟢" : "🔴"}${score.name
                 } : ${score.type}`
         ).join("\n") + "\n\n"
     );

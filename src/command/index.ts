@@ -119,4 +119,5 @@ createTickFunction();
 export { Score } from './score'
 export * from './logs'
 export { self, nearestPlayer, randomPlayer, allPlayers, regPlayer, allEntities } from './Argument/selectors'
+export { SlotType } from './Argument'
 export * from './excute'

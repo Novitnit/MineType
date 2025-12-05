@@ -85,6 +85,7 @@ export class ScoreTarget {
             score2: score,
             selector2: selector
         };
+        (fn as any)[commandSym] ||= [];
         (fn as any)[commandSym].push(result);
 
         return {
@@ -93,32 +94,49 @@ export class ScoreTarget {
         };
     }
 
-    add(value: number | { Score: Score; Selector: selector }): commandReturnType {
+    add(value: number | Omit<ScoreTarget, "target">): commandReturnType {
         if (typeof value === "number") {
             const result = this.ScoreChange("ScoreAdd", value);
             return result;
         }
-        const result = this.ScoreOperation(value.Score, value.Selector, "+=");
+
+        const ScoreT = (value as any)[Parent]
+        const selector = (value as any)[sel]
+
+        const result = this.ScoreOperation(ScoreT, selector, "+=");
         return result;
 
     }
 
-    remove(value: number | { Score: Score; Selector: selector }): commandReturnType {
+    remove(value: number | Omit<ScoreTarget, "target">): commandReturnType {
         if (typeof value === "number") {
             const result = this.ScoreChange("ScoreRemove", value);
             return result;
         }
-        const result = this.ScoreOperation(value.Score, value.Selector, "-=");
+        const ScoreT = (value as any)[Parent]
+        const selector = (value as any)[sel]
+
+        const result = this.ScoreOperation(ScoreT, selector, "-=");
         return result;
     }
 
-    set(value: number): commandReturnType {
-        const result = this.ScoreChange("ScoreSet", value);
+    set(value: number | Omit<ScoreTarget, "target">): commandReturnType {
+        if (typeof value === "number") {
+            const result = this.ScoreChange("ScoreSet", value);
+            return result;
+        }
+        const ScoreT = (value as any)[Parent]
+        const selector = (value as any)[sel]
+
+        const result = this.ScoreOperation(ScoreT, selector, "=");
         return result;
     }
 
-    operation({ score, selector, operation }: { score: Score, selector: selector, operation: CommandScoreOperation["operation"] }): commandReturnType {
-        const result = this.ScoreOperation(score, selector, operation);
+    operation({score, operation}:{score: Omit<ScoreTarget, "target">, operation: CommandScoreOperation["operation"]}): commandReturnType {
+        const ScoreT = (score as any)[Parent]
+        const selc = (score as any)[sel]
+
+        const result = this.ScoreOperation(ScoreT, selc, operation);
         return result;
     }
 

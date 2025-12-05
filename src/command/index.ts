@@ -3,7 +3,7 @@ import { ElseIf, If_StemType } from "./excute/if";
 import { CommandSay } from "./logs/say";
 import { CommandTitle } from "./logs/title";
 import { CommandScore } from "./score/children";
-export { Debugger } from './debug'
+export { Debugger } from '../debug'
 import fs from "fs";
 
 //FUNCTION type
@@ -39,7 +39,7 @@ export const allFunctions: FUNCTION[] = [];
 export const commandSym = Symbol("command");
 
 export class FUNCTION {
-    static Id = 1;
+    static Id = 2;
     static functionStack: (FUNCTION | If_Stem | ElseIf)[] = [];
 
     static nextId (){
@@ -89,16 +89,13 @@ export class FUNCTION {
         } as FUNCTION;
         Object.assign(callable, self);
         
+        callable.id = this.id;
+
         return callable;
     }
-
-    addCommand(command: command) {
-        (this as any)[commandSym].push(...command);
-    }
-
 }
 
-function createRootFunction() {
+function createLoadFunction() {
     const f = Object.create(FUNCTION.prototype) as FUNCTION;
     f.id = 0;
     (f as any)[commandSym] = [];
@@ -107,7 +104,17 @@ function createRootFunction() {
     return f;
 }
 
-createRootFunction();
+function createTickFunction() {
+    const f = Object.create(FUNCTION.prototype) as FUNCTION;
+    f.id = 1;
+    (f as any)[commandSym] = [];
+    f.Name = "tick_function";
+    allFunctions.push(f);
+    return f;
+}
+
+createLoadFunction();
+createTickFunction();
 
 export { Score } from './score'
 export * from './logs'

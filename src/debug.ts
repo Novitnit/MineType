@@ -1,6 +1,7 @@
 import * as fs from "fs";
-import { ScoreInternal, ScoreTable } from "./score";
-import { allFunctions, com, commandSym } from ".";
+import { ScoreInternal, ScoreTable } from "./command/score";
+import { allFunctions, com, commandSym } from "./command";
+import { chek_Config } from "./setUp";
 
 // ------------------------------
 // Helpers
@@ -99,7 +100,7 @@ function swCommand(file: fs.WriteStream, command: com, indentLevel = 0) {
             write(
                 file,
                 indentLevel,
-                `If_StemType Id:${command.id}` +
+                `If_StemType` +
                 ` ${command.As ? `as ${command.As}`:""} `+
                 `${command.At ? `at ${command.At}` : ""}`+
                 `${command.In ? ` in ${command.In}` : ""}`
@@ -120,23 +121,23 @@ function swCommand(file: fs.WriteStream, command: com, indentLevel = 0) {
                 for (const elseIf of command.elseIf) {
                     write(
                         file,
-                        indentLevel + 2,
+                        indentLevel + 1,
                         `ElseIf Condition: (${elseIf.condition.score} ` +
                         `${elseIf.condition.target} ` +
                         `${elseIf.condition.condition} ` +
                         `${typeof elseIf.condition.number === "number" ? elseIf.condition.number : `${elseIf.condition.number.score1} ${elseIf.condition.number.selector1}`})`
                     );
-                    write(file, indentLevel + 3, `Commands:`);
+                    write(file, indentLevel + 2, `Commands:`);
                     for (const sub of elseIf.commands) {
-                        swCommand(file, sub, indentLevel + 4);
+                        swCommand(file, sub, indentLevel + 3);
                     }
                 }
             }
             if (command.else) {
-                write(file, indentLevel + 2, `Else:`);
-                write(file, indentLevel + 3, `Commands:`);
+                write(file, indentLevel + 1, `Else:`);
+                write(file, indentLevel + 2, `Commands:`);
                 for (const sub of command.else) {
-                    swCommand(file, sub, indentLevel + 4);
+                    swCommand(file, sub, indentLevel + 3);
                 }
             }
 
@@ -159,6 +160,8 @@ export function Debugger() {
     const error = new Error();
     const stackLines = error.stack?.split("\n") || [];
     const callerLine = stackLines[2] || "";
+
+    chek_Config();
 
     const match = callerLine.match(/file:\/\/\/(.*):\d+:\d+/);
     const FilePath = match ? match[1] : callerLine.trim();

@@ -57,7 +57,6 @@ export class If_Stem extends baceExcute {
         (this.stackTrack as any)[commandSym].push({
             type: "If_StemType",
             If_type: "score",
-            id: If_Stem.Id++,
             As: this.As ?? undefined,
             At: this.At ?? undefined,
             In: this.In ?? undefined,

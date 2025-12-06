@@ -1,4 +1,4 @@
-import { Score, ScoreInternal } from ".";
+import { kType, kUsed, Score } from ".";
 import { selector } from "../Argument/selectors";
 import { commandReturnType, commandSym, FUNCTION } from "..";
 
@@ -51,7 +51,7 @@ export class ScoreTarget {
     }
 
     private ScoreChange(type: CommandScoreChange["type"], value: number): commandReturnType {
-        ScoreInternal.setUsed(this[Parent], true);
+        this[Parent][kUsed] = true;
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreAdd used outside FUNCTION()");
         const result: CommandScoreChange = {
@@ -70,12 +70,12 @@ export class ScoreTarget {
     }
 
     private ScoreOperation(score: Score, selector: selector, operation: CommandScoreOperation["operation"]): commandReturnType {
-        ScoreInternal.setUsed(this[Parent], true);
+        this[Parent][kUsed] = true;
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreOperation used outside FUNCTION()");
-        if (ScoreInternal.isUsed(score) === false) {
+        if (score[kUsed] === false) {
             console.error("\u001b[33mWarning: The Score used is not changed before. Did you forget to use it?\u001b[0m");
-            ScoreInternal.setUsed(score, true);
+            score[kUsed] = true;
         }
         const result: CommandScoreOperation = {
             type: "ScoreOperation",
@@ -141,7 +141,7 @@ export class ScoreTarget {
     }
 
     reset(): commandReturnType {
-        ScoreInternal.setUsed(this[Parent], true);
+        this[Parent][kUsed] = true;
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreReset used outside FUNCTION()");
         const result: CommandScoreReset = {
@@ -157,10 +157,10 @@ export class ScoreTarget {
     }
 
     enable(): commandReturnType {
-        ScoreInternal.setUsed(this[Parent], true);
+        this[Parent][kUsed] = true;
         const fn = FUNCTION.functionStack.at(-1);
         if (!fn) throw new Error("ScoreEnable used outside FUNCTION()");
-        if (ScoreInternal.getType(this[Parent]) !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
+        if (this[Parent][kType] !== "trigger") throw new Error("ScoreEnable can only be used on 'trigger' type scores");
         const result: CommandScoreEnable = {
             type: "ScoreEnable",
             score: this[Parent],

@@ -1,7 +1,6 @@
 export { 
     If, 
     FUNCTION,
-    Debugger,
     Score,
     Title,
     allEntities,
@@ -13,4 +12,5 @@ export {
     self,
     SlotType
 } from './command'
+export { Debugger } from './debug'
 export { Config } from './setUp'

@@ -1,7 +1,7 @@
 import { allFunctions, commandSym, FUNCTION } from "..";
 import { selector } from "../Argument/selectors";
 import { TitleComponent } from "../Argument/title";
-import { ScoreInternal } from "../score";
+import { kUsed } from "../score";
 
 type titleType = "title" | "subtitle" | "actionbar";
 
@@ -39,9 +39,9 @@ class TitleComponentReturn {
         const fn = FUNCTION.functionStack.at(-1) ?? allFunctions[0] as FUNCTION;
         component.map(comp => {
             if ("score" in comp) {
-                if (ScoreInternal.isUsed(comp.score.score) === false) {
+                if (comp.score.score[kUsed] === false) {
                     console.error("\u001b[33mWarning: The Score used is not changed before. Did you forget to use it?\u001b[0m");
-                    ScoreInternal.setUsed(comp.score.score, true);
+                    comp.score.score[kUsed] = true;
                 }
             }
         })

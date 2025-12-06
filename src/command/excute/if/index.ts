@@ -1,12 +1,16 @@
 import { command, commandSym, FUNCTION, functionStackType } from "../..";
+import { dimension, selector } from "../../Argument";
 import { baceExcute } from "../class";
 import { nscore, score, ScoreConditionType } from "./scoreConditions";
 
-type conditionType = ScoreConditionType;
+export type conditionType = ScoreConditionType;
 
 export interface If_StemType {
     type: "if_stem";
     ifType : "score";
+    As: selector | null;
+    At: selector | null;
+    In:dimension | null;
     if: {
         condition: conditionType;
         command: command;
@@ -37,8 +41,12 @@ export class If extends baceExcute {
         fn();
         FUNCTION.functionStack.pop();
         this.stackTack[commandSym].push({
+
             type:"if_stem",
             ifType:condition.type,
+            As: this.As,
+            At: this.At,
+            In: this.In,
             if:{
                 condition,
                 command: this[commandSym]
@@ -70,7 +78,8 @@ export class Else_If {
             condition,
             command: this[commandSym]
         });
-        return this as Omit<this, "as" | "at" | "in" | "if" >;
+        this[commandSym] = [];
+        return this;
     }
     else(fn: () => void) {
         const ifStem = (this.stackTack[commandSym][this.stackTack[commandSym].length -1] as If_StemType)

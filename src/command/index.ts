@@ -1,5 +1,5 @@
-import { If_Stem } from "./excute";
-import { ElseIf, If_StemType } from "./excute/if";
+import { If } from "./excute";
+import { Else_If, If_StemType } from "./excute/if";
 import { CommandSay } from "./logs/say";
 import { CommandTitle } from "./logs/title";
 import { CommandScore } from "./score/children";
@@ -37,10 +37,11 @@ export type commandReturnType = {
 //function
 export const allFunctions: FUNCTION[] = [];
 export const commandSym = Symbol("command");
+export type functionStackType = FUNCTION | If | Else_If;
 
 export class FUNCTION {
     static Id = 2;
-    static functionStack: (FUNCTION | If_Stem | ElseIf)[] = [];
+    static functionStack: functionStackType[] = [];
 
     static nextId (){
         return this.Id++;

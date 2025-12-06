@@ -1,83 +1,82 @@
-import { command, commandSym, FUNCTION, functionStackType, Score } from "../..";
-import { dimension, MinecraftItemId, selector, tpos } from "../../Argument";
-import { SlotType } from "../../Argument/slote";
+import { command, commandSym, FUNCTION, functionStackType } from "../..";
 import { baceExcute } from "../class";
-import { If_score, ScoreCondition, ScoreConditionType } from "./ifscore";
+import { nscore, score, ScoreConditionType } from "./scoreConditions";
 
-type ItemCondition =
-    | {
-        type: "item";
-        itemType: "block";
-        not?: boolean;
-        Pos: tpos;
-        slot: SlotType;
-        item: MinecraftItemId;
-    }
-    | {
-        type: "item";
-        itemType: "entity";
-        not?: boolean;
-        selector: selector;
-        slot: SlotType;
-        item: MinecraftItemId;
-    };
-
-type Condition = ScoreCondition | ItemCondition;
-
-type BlockConditionType = {
-    type: "item";
-    itemType: "block";
-    not: boolean;
-    Pos: tpos;
-    slot: SlotType;
-    item: MinecraftItemId;
-};
-
-type EntityItemConditionType = {
-    type: "item";
-    itemType: "entity";
-    not: boolean;
-    selector: selector;
-    slot: SlotType;
-    item: MinecraftItemId;
-};
-
-type ConditionType =
-    | ScoreConditionType
-    | BlockConditionType
-    | EntityItemConditionType;
+type conditionType = ScoreConditionType;
 
 export interface If_StemType {
-    type: "If_StemType";
-    As: selector | undefined;
-    At: selector | undefined;
-    In: dimension | undefined;
-    If_type: "score" | "item";
+    type: "if_stem";
+    ifType : "score";
     if: {
-        condition: ConditionType;
-        commands: command;
+        condition: conditionType;
+        command: command;
     };
-    elseIf: {
-        condition: ConditionType;
-        commands: command;
+    else_if: {
+        condition: conditionType;
+        command: command;
     }[] | null;
-    else: command | null;
+    else?: command | null;
 }
 
-export class If_Stem extends baceExcute {
+export class If extends baceExcute {
     [commandSym]: command = [];
-    static Id = 0;
-    protected stackTrack: functionStackType;
+    private stackTack: functionStackType;
+
+    static Score = score;
+    static nScore = nscore;
 
     constructor() {
         super();
         const stack = FUNCTION.functionStack[FUNCTION.functionStack.length - 1] as functionStackType;
-        if(!stack) throw new Error("If_Stem must be inside a FUNCTION");
-        this.stackTrack = stack;
+        if (!stack) throw new Error("If must be in function");
+        this.stackTack = stack;
     }
 
-    create(type: "score" | "item") {
-        if(type==="score") return new If_score(this.stackTrack, this.As, this.At, this.In);
-        throw new Error("Not Implemented");
+    if(condition: conditionType, fn: () => void) {
+        FUNCTION.functionStack.push(this)
+        fn();
+        FUNCTION.functionStack.pop();
+        this.stackTack[commandSym].push({
+            type:"if_stem",
+            ifType:condition.type,
+            if:{
+                condition,
+                command: this[commandSym]
+            },
+            else_if: null,
+            else: null,
+        })
+
+        return new Else_If();
+    }
+}
+
+export class Else_If {
+    [commandSym]: command = [];
+    private stackTack: functionStackType;
+    constructor() {
+         const stack = FUNCTION.functionStack[FUNCTION.functionStack.length - 1] as functionStackType;
+        if (!stack) throw new Error("If must be in function");
+        this.stackTack = stack;
+    }
+    else_if(condition: conditionType, fn: () => void) {
+        const ifStem = (this.stackTack[commandSym][this.stackTack[commandSym].length -1] as If_StemType)
+        if(condition.type !== ifStem.ifType) throw new Error(`Else_If condition type must be same as If condition type (${ifStem.ifType})`)
+        FUNCTION.functionStack.push(this)
+        fn();
+        FUNCTION.functionStack.pop();
+        ifStem!.else_if ||= [];
+        ifStem!.else_if.push({
+            condition,
+            command: this[commandSym]
+        });
+        return this as Omit<this, "as" | "at" | "in" | "if" >;
+    }
+    else(fn: () => void) {
+        const ifStem = (this.stackTack[commandSym][this.stackTack[commandSym].length -1] as If_StemType)
+        FUNCTION.functionStack.push(this)
+        fn();
+        FUNCTION.functionStack.pop();
+        ifStem!.else = this[commandSym];
     }
 }

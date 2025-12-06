@@ -4,6 +4,7 @@ import { chek_Config } from "../setUp";
 import fs from "fs";
 import { BaseWriter } from "./command";
 import { scoreWriters } from "./command/score";
+import { logWriters } from "./command/log";
 
 export class Debugger {
     protected file: fs.WriteStream;
@@ -24,6 +25,7 @@ export class Debugger {
         this.file = fs.createWriteStream(`${dir}/debug.log`);
         this.write(`Debug Log for ${FilePath}\n`);
         this.writers.push(...scoreWriters(this));
+        this.writers.push(...logWriters(this));
 
 
         this.writeScoreTable();

@@ -63,18 +63,3 @@ export class Score {
         return this[kName];
     }
 }
-
-export const ScoreInternal = {
-    getName(score: Score) {
-        return score[kName] as string;
-    },
-    getType(score: Score) {
-        return score[kType] as ScoreCriteria;
-    },
-    isUsed(score: Score) {
-        return !!score[kUsed];
-    },
-    setUsed(score: Score, used = true) {
-        score[kUsed] = used;
-    }
-};

@@ -3,7 +3,6 @@ import { Else_If, If_StemType } from "./excute/if";
 import { CommandSay } from "./logs/say";
 import { CommandTitle } from "./logs/title";
 import { CommandScore } from "./score/children";
-export { Debugger } from '../debug'
 import fs from "fs";
 
 //FUNCTION type
